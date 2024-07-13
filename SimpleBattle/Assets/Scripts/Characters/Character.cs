@@ -1,17 +1,16 @@
 using System;
 using UnityEngine;
 
-public class Character : MonoBehaviour
+public abstract class Character : MonoBehaviour
 {
     public event Action CharacterDied;
 
-    [SerializeField] protected Stats _stats;
-    public Stats Stats => _stats;
-
-    protected int _maxHP;
+    protected float _maxHP;
+    public float MaxHP => _maxHP;
     protected float _currentHP;
+    public float CurrentHP => _currentHP;
 
-    protected virtual void Start()
+    protected virtual void Awake()
     {
         Init();
     }
@@ -20,14 +19,14 @@ public class Character : MonoBehaviour
     {
         if (hp <= 0)
         {
-            Debug.LogWarning("You try to add incorrect HP");
+            Debug.LogWarning("You are trying to add incorrect HP");
             return;
         }
 
         _currentHP = Mathf.Clamp(_currentHP + hp, 0, _maxHP);
     }
 
-    protected void CheckDeath()
+    protected virtual void CheckDeath()
     {
         if (_currentHP <= 0)
         {
@@ -35,9 +34,5 @@ public class Character : MonoBehaviour
         }
     }
 
-    protected virtual void Init()
-    {
-        _maxHP = _stats.MaxHP;
-        _currentHP = _maxHP;
-    }
+    protected abstract void Init();
 }

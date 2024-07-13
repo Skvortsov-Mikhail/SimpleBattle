@@ -1,18 +1,21 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using Zenject;
 
 public class PopupPanel : MonoBehaviour
 {
+    [Header("Item")]
     [SerializeField] private TMP_Text m_Title;
     [SerializeField] private Image m_ItemIcon;
-
     [SerializeField] private TMP_Text m_AmountText;
+
+    [Header("Property")]
     [SerializeField] private Image m_PropertyIcon;
     [SerializeField] private TMP_Text m_PropertyValueText;
     [SerializeField] private TMP_Text m_WeightText;
 
+    [Header("Buttons")]
     [SerializeField] private Button m_ActionButton;
     [SerializeField] private Button m_DeleteButton;
     [SerializeField] private Button m_MisclickButton;

@@ -7,8 +7,13 @@ public class Player : Character
     public event Action<int> HelmetArmorUpdated;
     public event Action<int> BodyArmorUpdated;
 
+    [SerializeField] private PlayerConfiguration _playerConfiguration;
+
     private int _helmetArmor = 0;
+    public int HelmetArmor => _helmetArmor;
+
     private int _bodyArmor = 0;
+    public int BodyArmor => _bodyArmor;
 
     public void ApplyDamage(float damage, ShootType type)
     {
@@ -51,5 +56,14 @@ public class Player : Character
         _bodyArmor = Mathf.Clamp(newValue, 0, int.MaxValue);
 
         BodyArmorUpdated?.Invoke(_bodyArmor);
+    }
+
+    protected override void Init()
+    {
+        _maxHP = _playerConfiguration.MaxHP;
+        _currentHP = _maxHP;
+
+        _helmetArmor = _playerConfiguration.DefaultHelmetArmor;
+        _bodyArmor = _playerConfiguration.DefaultBodyArmor;
     }
 }

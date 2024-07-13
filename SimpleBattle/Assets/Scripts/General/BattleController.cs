@@ -10,8 +10,9 @@ public class BattleController : MonoBehaviour
     public event Action<bool> PistolButtonActivated;
     public event Action<bool> GunButtonActivated;
 
-    [SerializeField] private float m_ShootCooldown;
+    [SerializeField] private BattleConfiguration m_BattleConfiguration;
 
+    [Header("Buttons")]
     [SerializeField] private Button m_ShootEnemyButton;
     [SerializeField] private Button m_ChoosePistolButton;
     [SerializeField] private Button m_ChooseGunButton;
@@ -28,6 +29,7 @@ public class BattleController : MonoBehaviour
     private Item _currentAmmo;
     private ItemType _currentItemType;
     private ShootType _currentShootType;
+    private float _shootCooldown;
 
     [Inject]
     public void Construct(Player player, Enemy enemy, Inventory inventory, LevelController levelController)
@@ -49,7 +51,8 @@ public class BattleController : MonoBehaviour
 
         ShootingPossibility?.Invoke(false);
 
-        _currentShootType = ShootType.Head;
+        _shootCooldown = m_BattleConfiguration.ShootCooldown;
+        _currentShootType = m_BattleConfiguration.StartShootType;
     }
 
     private void OnDestroy()
@@ -133,11 +136,11 @@ public class BattleController : MonoBehaviour
                 break;
         }
 
-        yield return new WaitForSeconds(m_ShootCooldown);
+        yield return new WaitForSeconds(_shootCooldown);
 
         HitPlayer();
 
-        yield return new WaitForSeconds(m_ShootCooldown);
+        yield return new WaitForSeconds(_shootCooldown);
 
         ShootingPossibility?.Invoke(true);
 

@@ -33,7 +33,7 @@ public class LevelController : MonoBehaviour
     public void EnemyDied()
     {
         _inventory.AddRandomItem();
-        _enemy.AddHP(_enemy.Stats.MaxHP);
+        _enemy.AddHP(_enemy.MaxHP);
     }
 
     public void PlayerDied()

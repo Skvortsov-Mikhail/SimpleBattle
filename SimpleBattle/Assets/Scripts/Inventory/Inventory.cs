@@ -1,14 +1,12 @@
-using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
 public class Inventory : MonoBehaviour
 {
-    [SerializeField] private List<Item> m_Items = new List<Item>();
-
     [SerializeField] private PopupPanel m_PopupPanel;
 
     private Slot[] _slots;
+    private Object[] _items;
 
     private DiContainer _diContainer;
     [Inject]
@@ -19,6 +17,8 @@ public class Inventory : MonoBehaviour
 
     private void Start()
     {
+        _items = Resources.LoadAll("Prefabs/Items", typeof(Item));
+
         _slots = GetComponentsInChildren<Slot>();
 
         GetStartPack();
@@ -32,11 +32,11 @@ public class Inventory : MonoBehaviour
 
     public void AddRandomItem()
     {
-        int randomItem = Random.Range(0, m_Items.Count);
+        int randomItem = Random.Range(0, _items.Length);
 
         var slot = GetFirstEmptySlot();
 
-        var newItem = _diContainer.InstantiatePrefab(m_Items[randomItem], slot.transform);
+        var newItem = _diContainer.InstantiatePrefab(_items[randomItem], slot.transform);
 
         var item = newItem.GetComponent<Item>();
 
@@ -89,11 +89,11 @@ public class Inventory : MonoBehaviour
 
     private void GetStartPack()
     {
-        for (int i = 0; i < m_Items.Count; i++)
+        for (int i = 0; i < _items.Length; i++)
         {
             var slot = GetFirstEmptySlot();
 
-            var newItem = _diContainer.InstantiatePrefab(m_Items[i], slot.transform);
+            var newItem = _diContainer.InstantiatePrefab(_items[i], slot.transform);
 
             var item = newItem.GetComponent<Item>();
 

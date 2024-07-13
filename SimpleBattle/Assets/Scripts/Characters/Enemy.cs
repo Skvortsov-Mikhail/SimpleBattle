@@ -3,10 +3,12 @@ using UnityEngine;
 
 public class Enemy : Character
 {
-    [SerializeField] private float m_Damage;
-    public float Damage => m_Damage;
-
     public event Action<float> EnemyHPUpdated;
+
+    [SerializeField] private EnemyConfiguration _enemyConfiguration;
+
+    private float _damage;
+    public float Damage => _damage;
 
     public void ApplyDamage(float damage)
     {
@@ -22,5 +24,13 @@ public class Enemy : Character
         base.AddHP(hp);
 
         EnemyHPUpdated?.Invoke(_currentHP);
+    }
+
+    protected override void Init()
+    {
+        _maxHP = _enemyConfiguration.MaxHP;
+        _currentHP = _maxHP;
+
+        _damage = _enemyConfiguration.Damage;
     }
 }
