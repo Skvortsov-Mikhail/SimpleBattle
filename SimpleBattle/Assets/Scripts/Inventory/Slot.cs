@@ -17,7 +17,10 @@ public class Slot : MonoBehaviour
 
         if (_item != null && _item.Config.ItemType != item.Config.ItemType) return false;
 
-        item.ParentSlot.UnfillSlot();
+        if (item.ParentSlot != null)
+        {
+            item.ParentSlot.UnfillSlot();
+        }
 
         if (_item != null && _item.Config.ItemType == item.Config.ItemType)
         {

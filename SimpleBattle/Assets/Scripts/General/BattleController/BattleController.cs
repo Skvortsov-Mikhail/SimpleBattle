@@ -4,8 +4,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
 
-public class BattleController : MonoBehaviour
+public class BattleController : MonoBehaviour, ISaveable
 {
+    public const string BattleControllerCurrentShootTypeSavingDataName = "BattleControllerCurrentShootTypeData";
+    public const string BattleControllerCurrentItemTypeSavingDataName = "BattleControllerCurrentItemTypeData";
+
     public event Action<bool> ShootingPossibility;
     public event Action<bool> PistolButtonActivated;
     public event Action<bool> GunButtonActivated;
@@ -18,11 +21,7 @@ public class BattleController : MonoBehaviour
     [SerializeField] private Button m_ChooseGunButton;
 
     private Player _player;
-    public Player Player => _player;
-
     private Enemy _enemy;
-    public Enemy Enemy => _enemy;
-
     private Inventory _inventory;
     private LevelController _levelController;
 
@@ -53,6 +52,12 @@ public class BattleController : MonoBehaviour
 
         _shootCooldown = m_BattleConfiguration.ShootCooldown;
         _currentShootType = m_BattleConfiguration.StartShootType;
+
+        if (FileHandler.HasFile(BattleControllerCurrentShootTypeSavingDataName) == true ||
+            FileHandler.HasFile(BattleControllerCurrentItemTypeSavingDataName) == true)
+        {
+            LoadData();
+        }
     }
 
     private void OnDestroy()
@@ -67,6 +72,8 @@ public class BattleController : MonoBehaviour
         _player.ApplyDamage(_enemy.Damage, _currentShootType);
 
         _currentShootType = _currentShootType == ShootType.Head ? ShootType.Body : ShootType.Head;
+
+        SaveData();
     }
 
     private void HitEnemy()
@@ -119,6 +126,8 @@ public class BattleController : MonoBehaviour
     {
         _currentItemType = type;
         _currentAmmo = _inventory.GetFirstAmmo(type);
+
+        SaveData();
     }
 
     private IEnumerator WaitingEnemyTurnCoroutine(ItemType type)
@@ -140,6 +149,8 @@ public class BattleController : MonoBehaviour
 
         HitPlayer();
 
+        _inventory.SaveData();
+
         yield return new WaitForSeconds(_shootCooldown);
 
         ShootingPossibility?.Invoke(true);
@@ -157,4 +168,45 @@ public class BattleController : MonoBehaviour
 
         StopCoroutine(WaitingEnemyTurnCoroutine(type));
     }
+
+    #region Saving
+
+    public void SaveData()
+    {
+        Saver<ShootType>.Save(BattleControllerCurrentShootTypeSavingDataName, _currentShootType);
+        Saver<ItemType>.Save(BattleControllerCurrentItemTypeSavingDataName, _currentItemType);
+    }
+
+    public void LoadData()
+    {
+        Saver<ShootType>.TryLoad(BattleControllerCurrentShootTypeSavingDataName, ref _currentShootType);
+        Saver<ItemType>.TryLoad(BattleControllerCurrentItemTypeSavingDataName, ref _currentItemType);
+
+        SetLoadedAmmo();
+    }
+
+    public void ResetData()
+    {
+        FileHandler.Reset(BattleControllerCurrentShootTypeSavingDataName);
+        FileHandler.Reset(BattleControllerCurrentItemTypeSavingDataName);
+    }
+
+    private void SetLoadedAmmo()
+    {
+        switch (_currentItemType)
+        {
+            case ItemType.PistolAmmo:
+                ChoosePistol();
+                m_ChoosePistolButton.interactable = false;
+                break;
+            case ItemType.GunAmmo:
+                ChooseGun();
+                m_ChooseGunButton.interactable = false;
+                break;
+            default:
+                break;
+        }
+    }
+
+    #endregion
 }

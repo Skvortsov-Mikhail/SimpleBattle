@@ -3,18 +3,24 @@ using Zenject;
 
 public class ItemUsageController : MonoBehaviour
 {
-    [SerializeField] private Slot m_PlayerHelmetSlot;
-    [SerializeField] private Slot m_PlayerBodySlot;
+    private Slot _playerHelmetSlot;
+    private Slot _playerBodySlot;
 
     private Item _currentItem;
     private Inventory _inventory;
 
-    private BattleController _battleController;
+    private Player _player;
     [Inject]
-    public void Construct(BattleController battleController, Inventory inventory)
+    public void Construct(Player player, Inventory inventory)
     {
-        _battleController = battleController;
+        _player = player;
         _inventory = inventory;
+    }
+
+    private void Start()
+    {
+        _playerHelmetSlot = _inventory.PlayerHelmetSlot;
+        _playerBodySlot = _inventory.PlayerBodySlot;
     }
 
     public void UseItem(Item item)
@@ -28,11 +34,13 @@ public class ItemUsageController : MonoBehaviour
                 AmmoAction();
                 break;
 
-            case ItemType.HelmetArmor:
+            case ItemType.LightHelmetArmor:
+            case ItemType.HeavyHelmetArmor:
                 HelmetArmorAction();
                 break;
 
-            case ItemType.BodyArmor:
+            case ItemType.LightBodyArmor:
+            case ItemType.HeavyBodyArmor:
                 BodyArmorAction();
                 break;
 
@@ -40,7 +48,10 @@ public class ItemUsageController : MonoBehaviour
                 AidKitAction();
                 break;
         }
+
+        _inventory.SaveData();
     }
+
     private void AmmoAction()
     {
         _currentItem.ParentSlot.FillSlotToMaxAmount();
@@ -48,66 +59,49 @@ public class ItemUsageController : MonoBehaviour
 
     private void HelmetArmorAction()
     {
-        _battleController.Player.ChangeHelmetArmor(_currentItem.Config.PropertyValue);
+        _player.ChangeHelmetArmor(_currentItem.Config.PropertyValue);
 
-        if (m_PlayerHelmetSlot.Item != null)
-        {
-            var previousHelmet = m_PlayerHelmetSlot.Item;
-            var newSlot = _inventory.GetFirstEmptySlot();
-
-            if (newSlot.TryFillSlot(previousHelmet, 1) == true)
-            {
-                previousHelmet.transform.SetParent(newSlot.transform);
-                previousHelmet.transform.localPosition = Vector3.zero;
-                previousHelmet.gameObject.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
-
-                previousHelmet.GetComponent<ItemEventHandler>().enabled = true;
-            }
-        }
-
-        if (m_PlayerHelmetSlot.TryFillSlot(_currentItem, 1) == true)
-        {
-            _currentItem.transform.SetParent(m_PlayerHelmetSlot.transform);
-            _currentItem.transform.localPosition = Vector3.zero;
-            _currentItem.gameObject.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
-
-            _currentItem.GetComponent<ItemEventHandler>().enabled = false;
-        }
+        ChangeArmor(_playerHelmetSlot);
     }
 
     private void BodyArmorAction()
     {
-        _battleController.Player.ChangeBodyArmor(_currentItem.Config.PropertyValue);
+        _player.ChangeBodyArmor(_currentItem.Config.PropertyValue);
 
-        if (m_PlayerBodySlot.Item != null)
+        ChangeArmor(_playerBodySlot);
+    }
+
+    private void AidKitAction()
+    {
+        _player.AddHP(_currentItem.Config.PropertyValue);
+
+        _currentItem.ParentSlot.TrySpendItem(_currentItem.Config.RequiredAmountToUse);
+    }
+
+    private void ChangeArmor(Slot slot)
+    {
+        if (slot.Item != null)
         {
-            var previousBody = m_PlayerBodySlot.Item;
+            var previousItem = slot.Item;
             var newSlot = _inventory.GetFirstEmptySlot();
 
-            if (newSlot.TryFillSlot(previousBody, 1) == true)
+            if (newSlot.TryFillSlot(previousItem, 1) == true)
             {
-                previousBody.transform.SetParent(newSlot.transform);
-                previousBody.transform.localPosition = Vector3.zero;
-                previousBody.gameObject.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
+                previousItem.transform.SetParent(newSlot.transform);
+                previousItem.transform.localPosition = Vector3.zero;
+                previousItem.gameObject.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
 
-                previousBody.GetComponent<ItemEventHandler>().enabled = true;
+                previousItem.GetComponent<ItemEventHandler>().enabled = true;
             }
         }
 
-        if (m_PlayerBodySlot.TryFillSlot(_currentItem, 1) == true)
+        if (slot.TryFillSlot(_currentItem, 1) == true)
         {
-            _currentItem.transform.SetParent(m_PlayerBodySlot.transform);
+            _currentItem.transform.SetParent(slot.transform);
             _currentItem.transform.localPosition = Vector3.zero;
             _currentItem.gameObject.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
 
             _currentItem.GetComponent<ItemEventHandler>().enabled = false;
         }
-    }
-
-    private void AidKitAction()
-    {
-        _battleController.Player.AddHP(_currentItem.Config.PropertyValue);
-
-        _currentItem.ParentSlot.TrySpendItem(_currentItem.Config.RequiredAmountToUse);
     }
 }

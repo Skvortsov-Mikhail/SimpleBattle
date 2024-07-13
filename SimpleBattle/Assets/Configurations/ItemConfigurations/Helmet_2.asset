@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Name: "\u0428\u043B\u0435\u043C"
   ItemIcon: {fileID: 21300000, guid: aae5c7af4aadeb84f827e102945f03b5, type: 3}
-  ItemType: 2
+  ItemType: 3
   PropertyIcon: {fileID: 21300000, guid: 9102478f13956c347897dad6f5905f79, type: 3}
   PropertyValue: 10
   RequiredAmountToUse: 1

@@ -1,8 +1,10 @@
 using System;
 using UnityEngine;
 
-public class Player : Character
+public class Player : Character, ISaveable
 {
+    public const string PlayerHPSavingDataName = "PlayerHP";
+
     public event Action<float> PlayerHPUpdated;
     public event Action<int> HelmetArmorUpdated;
     public event Action<int> BodyArmorUpdated;
@@ -14,6 +16,16 @@ public class Player : Character
 
     private int _bodyArmor = 0;
     public int BodyArmor => _bodyArmor;
+
+    protected override void Awake()
+    {
+        base.Awake();
+
+        if (FileHandler.HasFile(PlayerHPSavingDataName) == true)
+        {
+            LoadData();
+        }
+    }
 
     public void ApplyDamage(float damage, ShootType type)
     {
@@ -32,6 +44,8 @@ public class Player : Character
 
         _currentHP = Mathf.Clamp(_currentHP - modifiedDamage, 0, _maxHP);
 
+        SaveData();
+
         PlayerHPUpdated?.Invoke(_currentHP);
 
         CheckDeath();
@@ -40,6 +54,8 @@ public class Player : Character
     public override void AddHP(float hp)
     {
         base.AddHP(hp);
+
+        SaveData();
 
         PlayerHPUpdated?.Invoke(_currentHP);
     }
@@ -66,4 +82,23 @@ public class Player : Character
         _helmetArmor = _playerConfiguration.DefaultHelmetArmor;
         _bodyArmor = _playerConfiguration.DefaultBodyArmor;
     }
+
+    #region Saving
+
+    public void SaveData()
+    {
+        Saver<float>.Save(PlayerHPSavingDataName, _currentHP);
+    }
+
+    public void LoadData()
+    {
+        Saver<float>.TryLoad(PlayerHPSavingDataName, ref _currentHP);
+    }
+
+    public void ResetData()
+    {
+        FileHandler.Reset(PlayerHPSavingDataName);
+    }
+
+    #endregion
 }

@@ -2,7 +2,9 @@
 {
     PistolAmmo,
     GunAmmo,
-    HelmetArmor,
-    BodyArmor,
+    LightHelmetArmor,
+    HeavyHelmetArmor,
+    LightBodyArmor,
+    HeavyBodyArmor,
     AidKit
 }
